@@ -83,7 +83,7 @@ nav .in{max-width:480px;margin:0 auto;display:flex}
 nav button{flex:1;background:none;border:none;color:var(--muted);padding:10px 0 12px;font-family:inherit;font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
 nav button .ni{font-size:18px}
 nav button.on{color:var(--blue)}
-.sw{position:relative;width:42px;height:24px;background:var(--card2);border:1px solid var(--line);border-radius:20px;cursor:pointer;transition:.2s}
+.sw{position:relative;width:42px;height:24px;background:var(--card2);border:1px solid var(--line);border-radius:20px;cursor:pointer;transition:.2s;flex-shrink:0}
 .sw i{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:.2s}
 .sw.on{background:rgba(59,130,246,.25);border-color:var(--blue)}
 .sw.on i{background:var(--blue);transform:translateX(-18px)}
@@ -94,7 +94,6 @@ nav button.on{color:var(--blue)}
 <body>
 <div id="app">
 
-<!-- خانه -->
 <section id="page-home" class="page active">
  <div class="head"><div class="logo">🛡️</div><div><h1>اسکنر IP کلادفلر</h1><p>پیدا کردن بهترین و پایدارترین IP ها</p></div></div>
  <div class="badge"><span class="dot"></span><span id="homeBadge">آماده برای اسکن</span></div>
@@ -110,7 +109,6 @@ nav button.on{color:var(--blue)}
  <button class="btn" onclick="startFromHome()">▶ شروع اسکن</button>
 </section>
 
-<!-- اسکن -->
 <section id="page-scan" class="page">
  <div id="settingsPanel">
   <div class="head"><h1 style="font-size:17px;font-weight:800">→ تنظیمات اسکن</h1></div>
@@ -122,13 +120,17 @@ nav button.on{color:var(--blue)}
    </select>
    <textarea id="customRanges" style="display:none" placeholder="198.41.223.0/24&#10;104.16.0.0/20&#10;172.64.10.7"></textarea>
   </div>
-  <div class="card"><h3>🔌 پورت</h3><p class="muted" style="margin-bottom:8px">پورتی که برای تست استفاده می شود (TLS: 443, 2053, 2083, 2087, 2096, 8443)</p><input type="number" id="portIn" value="443"></div>
-  <div class="card"><h3>🔁 تعداد تست برای هر IP <span class="rv" id="testsVal">3</span></h3><p class="muted" style="margin-bottom:8px">هر IP چند بار تست شود (دقت بالاتر)</p>
+  <div class="card"><h3>🔌 پورت</h3><p class="muted" style="margin-bottom:8px">پورت TLS برای تست (443, 2053, 2083, 2087, 2096, 8443)</p><input type="number" id="portIn" value="443"></div>
+  <div class="card"><h3>🔁 تعداد تست برای هر IP <span class="rv" id="testsVal">3</span></h3><p class="muted" style="margin-bottom:8px">تکرار تست = دقت بالاتر</p>
    <div class="seg" id="testsSeg"><button data-v="1">1</button><button data-v="3" class="on">3</button><button data-v="5">5</button><button data-v="10">10</button></div></div>
   <div class="card"><h3>🎯 تعداد کل IP ها <span class="rv" id="totalVal">300</span></h3><input type="range" id="totalR" min="50" max="2000" step="50" value="300"></div>
-  <div class="card"><h3>⚙️ تعداد همزمان (Threads) <span class="rv" id="thrVal">200</span></h3><p class="muted">تعداد اتصال همزمان</p><input type="range" id="thrR" min="50" max="300" step="10" value="200"></div>
-  <div class="card"><h3>⏱ زمان انتظار (Timeout) <span class="rv" id="toVal">3 ثانیه</span></h3><p class="muted">حداکثر زمان انتظار برای هر تست</p><input type="range" id="toR" min="1" max="10" value="3"></div>
-  <div class="card"><h3> حداقل امتیاز <span class="rv" id="minVal">80</span></h3><p class="muted">نمایش فقط IP هایی با امتیاز بالاتر</p><input type="range" id="minR" min="0" max="100" value="80"></div>
+  <div class="card"><h3>⚙️ تعداد همزمان (Threads) <span class="rv" id="thrVal">200</span></h3><p class="muted">در فاز ۱ برای دقت اندازه‌گیری، حداکثر ۶ اعمال می‌شود</p><input type="range" id="thrR" min="50" max="300" step="10" value="200"></div>
+  <div class="card"><h3>⏱ زمان انتظار (Timeout) <span class="rv" id="toVal">3 ثانیه</span></h3><input type="range" id="toR" min="1" max="10" value="3"></div>
+  <div class="card"><h3>⭐ حداقل امتیاز <span class="rv" id="minVal">80</span></h3><input type="range" id="minR" min="0" max="100" value="80"></div>
+  <div class="card">
+   <div class="row"><span>🔁 تأیید دومرحله‌ای (دقت بالا)</span><div class="sw on" id="swVerify" onclick="tglSw(this,'verify')"><i></i></div></div>
+   <div class="row"><span>🔌 تست چند پورت برای برترها</span><div class="sw on" id="swPort" onclick="tglSw(this,'multiPort')"><i></i></div></div>
+  </div>
   <button class="btn" onclick="startScan()">▶ ذخیره و شروع اسکن</button>
  </div>
  <div id="progressPanel" style="display:none">
@@ -136,10 +138,10 @@ nav button.on{color:var(--blue)}
   <div class="card">
    <div class="ringwrap">
     <svg width="170" height="170" viewBox="0 0 120 120"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#22c55e"/></linearGradient></defs><circle cx="60" cy="60" r="52" class="ring-bg"/><circle cx="60" cy="60" r="52" id="ringFg" class="ring-fg"/></svg>
-    <div class="ringtxt"><b id="pPct">0%</b><span>در حال اسکن...</span></div>
+    <div class="ringtxt"><b id="pPct">0%</b><span id="phaseLbl">کالیبراسیون...</span></div>
    </div>
    <div class="mini">
-    <div class="m">📊 <div>تعداد اسکن شده<br><b id="pDone">0</b></div></div>
+    <div class="m">📊 <div>اسکن شده<br><b id="pDone">0</b></div></div>
     <div class="m">✅ <div>موفق<br><b id="pOk" style="color:var(--green)">0</b></div></div>
     <div class="m">❌ <div>ناموفق<br><b id="pFail" style="color:var(--red)">0</b></div></div>
     <div class="m">⏳ <div>در صف<br><b id="pQueue" style="color:var(--blue)">0</b></div></div>
@@ -151,26 +153,23 @@ nav button.on{color:var(--blue)}
  </div>
 </section>
 
-<!-- نتایج -->
 <section id="page-results" class="page">
  <div class="head"><h1 style="font-size:17px;font-weight:800">نتایج اسکن ⧩</h1></div>
  <div class="seg" style="margin-bottom:12px" id="resFilter">
   <button data-f="all" class="on">همه</button><button data-f="ok">موفق</button><button data-f="top">فقط برترها</button>
  </div>
  <div class="card" style="padding:6px 10px">
-  <table><thead><tr><th>وضعیت</th><th>امتیاز</th><th>پینگ</th><th>IP</th></tr></thead><tbody id="resBody"></tbody></table>
+  <table><thead><tr><th>IP</th><th>پینگ</th><th>امتیاز</th><th>وضعیت</th></tr></thead><tbody id="resBody"></tbody></table>
  </div>
  <div class="acts"><button onclick="shareRes()">🔗 اشتراک گذاری</button><button onclick="saveRes()">💾 ذخیره</button><button onclick="copyRes()">📋 کپی</button></div>
  <p class="muted" style="text-align:center;margin-top:10px" id="resCount">تعداد: 0</p>
 </section>
 
-<!-- تاریخچه -->
 <section id="page-history" class="page">
  <div class="head"><h1 style="font-size:17px;font-weight:800">→ تاریخچه اسکن ها</h1></div>
  <div class="card" id="histBox"><div class="muted">تاریخچه ای وجود ندارد</div></div>
 </section>
 
-<!-- تنظیمات -->
 <section id="page-settings" class="page">
  <div class="head"><h1 style="font-size:17px;font-weight:800">→ تنظیمات</h1></div>
  <div class="card">
@@ -180,7 +179,7 @@ nav button.on{color:var(--blue)}
   <div class="row"><span>🔔 اعلان ها</span><div class="sw on" id="swNotif" onclick="tglSw(this,'notif')"><i></i></div></div>
   <div class="row"><span>💾 ذخیره نتایج</span><div class="sw on" id="swSave" onclick="tglSw(this,'save')"><i></i></div></div>
   <div class="row"><span>🗑 پاکسازی کش</span><span class="val" id="cacheSize" style="cursor:pointer" onclick="clearCache()">0 KB</span></div>
-  <div class="row"><span>ℹ️ درباره برنامه</span><span class="val" style="cursor:pointer" onclick="toast('اسکنر IP کلادفلر — نسخه 2.0 آنلاین')">›</span></div>
+  <div class="row"><span>ℹ️ درباره برنامه</span><span class="val" style="cursor:pointer" onclick="toast('اسکنر IP کلادفلر — نسخه 3.0 دقیق')">›</span></div>
  </div>
 </section>
 
@@ -197,47 +196,87 @@ nav button.on{color:var(--blue)}
 <script>
 const CF_RANGES=['104.16.0.0/13','104.24.0.0/14','108.162.192.0/18','131.0.72.0/22','141.101.64.0/18','162.158.0.0/15','172.64.0.0/13','173.245.48.0/20','188.114.96.0/20','190.93.240.0/20','197.234.240.0/22','198.41.128.0/17'];
 const $=id=>document.getElementById(id);
-let S=Object.assign({source:'cf',custom:'',port:443,tests:3,total:300,threads:200,timeout:3,minScore:80,theme:'dark',notif:true,save:true},JSON.parse(localStorage.getItem('cfscan_set')||'{}'));
-let results=[],running=false,stopFlag=false,chartData=[],dist=[0,0,0,0,0],done=0,okC=0,failC=0,totalQ=0,assigned=0;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let S=Object.assign({source:'cf',custom:'',port:443,tests:3,total:300,threads:200,timeout:3,minScore:80,theme:'dark',notif:true,save:true,verify:true,multiPort:true},JSON.parse(localStorage.getItem('cfscan_set')||'{}'));
+let results=[],running=false,stopFlag=false,chartData=[],dist=[0,0,0,0,0],done1=0,done2=0,assigned=0,totalQ=0,phase=1,baseline=null;
 
 function saveSet(){localStorage.setItem('cfscan_set',JSON.stringify(S))}
-function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
 function go(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('page-'+p).classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.p===p))}
 function fmt(n){return n.toLocaleString('en-US')}
 
-/* ---------- ابزار IP ---------- */
+/* ---------- IP utils ---------- */
 function ip2int(ip){return ip.split('.').reduce((a,o)=>((a<<8)+ +o)>>>0,0)>>>0}
 function int2ip(n){return[(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.')}
 function cidr(c){const[b,p]=c.split('/');const pref=p===undefined?32:+p;const h=32-pref;const m=pref===0?0:(0xFFFFFFFF<<h)>>>0;return{start:(ip2int(b)&m)>>>0,count:Math.pow(2,h)}}
 function randIP(c){const{start,count}=cidr(c);return int2ip((start+Math.floor(Math.random()*count))>>>0)}
 function expand(c,max){const{start,count}=cidr(c);const out=[];if(count<=max){for(let i=0;i<count;i++)out.push(int2ip((start+i)>>>0))}else{const s=new Set();while(out.length<max){const r=Math.floor(Math.random()*count);if(!s.has(r)){s.add(r);out.push(int2ip((start+r)>>>0))}}}return out}
-function parseCustom(txt){const toks=txt.split(/[\s,]+/).filter(Boolean);let out=[];for(const t of toks){if(/^\d{1,3}(\.\d{1,3}){3}$/.test(t))out.push(t);else if(/^\d{1,3}(\.\d{1,3}){3}\/([0-9]|[12][0-9]|3[012])$/.test(t))out=out.concat(expand(t,3000));}return[...new Set(out)]}
+function parseCustom(t){const tk=t.split(/[\s,]+/).filter(Boolean);let out=[];for(const x of tk){if(/^\d{1,3}(\.\d{1,3}){3}$/.test(x))out.push(x);else if(/^\d{1,3}(\.\d{1,3}){3}\/([0-9]|[12][0-9]|3[012])$/.test(x))out=out.concat(expand(x,3000))}return[...new Set(out)]}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function median(a){if(!a.length)return null;const s=[...a].sort((x,y)=>x-y);const m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2}
+function jitterOf(a){if(a.length<2)return 0;const s=[...a].sort((x,y)=>x-y);return s.length>=4?s[s.length-2]-s[1]:s[s.length-1]-s[0]}
 
-/* ---------- موتور اسکن ---------- */
+/* ---------- پروب ---------- */
 async function probe(ip,port,toMs){
  const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),toMs);const t0=performance.now();
- try{await fetch('https://'+ip+':'+port+'/cdn-cgi/trace?_='+Date.now()+Math.random(),{mode:'no-cors',cache:'no-store',signal:ctrl.signal});clearTimeout(to);return{ok:true,ms:performance.now()-t0}}
+ try{await fetch('https://'+ip+':'+port+'/cdn-cgi/trace?_='+Date.now()+''+Math.random(),{mode:'no-cors',cache:'no-store',signal:ctrl.signal});clearTimeout(to);return{ok:true,ms:performance.now()-t0}}
  catch(e){clearTimeout(to);const dt=performance.now()-t0;
   if(e.name!=='AbortError'&&dt<Math.min(toMs*0.7,2500))return{ok:true,ms:dt};
   return{ok:false,ms:null}}
 }
+async function calibrate(){
+ $('phaseLbl').textContent='کالیبراسیون پینگ پایه...';
+ const ctrl=new AbortController();const to=setTimeout(()=>ctrl.abort(),6000);const t0=performance.now();
+ try{await fetch('https://1.1.1.1/cdn-cgi/trace?c='+Date.now(),{mode:'no-cors',cache:'no-store',signal:ctrl.signal});clearTimeout(to);baseline=Math.round(performance.now()-t0);toast('📶 پینگ پایه: '+baseline+'ms')}
+ catch(e){clearTimeout(to);baseline=null}
+}
+
+/* ---------- امتیاز ---------- */
+function computeScore(succ,med,jit,susp,port2){
+ let lat;
+ if(med==null||med>=999)lat=0;
+ else if(baseline)lat=clamp(100-Math.max(med-baseline*1.3,0)*0.35,0,100);
+ else lat=clamp(100-Math.max(med-50,0)*(100/350),0,100);
+ const stab=clamp(100-jit*1.5,0,100);
+ let sc=succ*60+lat*0.25+stab*0.15;
+ if(port2!==null)sc+=port2?5:-8;
+ if(susp)sc=Math.min(sc,40);
+ return clamp(Math.round(sc*10)/10,0,100);
+}
+
+/* ---------- فاز ۱ ---------- */
 async function evalIP(ip){
- let ok=0,sum=0;
+ const msArr=[];let ok=0,att=0;
  for(let i=0;i<S.tests;i++){
   if(stopFlag)break;
-  const r=await probe(ip,S.port,S.timeout*1000);
-  if(r.ok){ok++;sum+=r.ms;pushChart(r.ms)}
-  await new Promise(r2=>setTimeout(r2,120));
+  att++;
+  let r=await probe(ip,S.port,S.timeout*1000);
+  if(!r.ok)r=await probe(ip,S.port,S.timeout*1000); // تلاش مجدد
+  if(r.ok){ok++;msArr.push(r.ms);pushChart(r.ms)}
+  await sleep(120);
  }
- const succ=ok/S.tests;const avg=ok?sum/ok:null;
- const lat=avg==null?0:Math.max(0,Math.min(100,100-Math.max(avg-25,0)*0.35));
- const score=Math.round((succ*65+lat*0.35)*10)/10;
- return{ip,ping:avg?Math.round(avg):null,score,ok}
+ const med=median(msArr),jit=jitterOf(msArr);
+ const susp=med!==null&&med<30&&jit<15;
+ return{ip,ping:med?Math.round(med):null,jit:Math.round(jit),score:computeScore(ok/Math.max(att,1),med==null?999:med,jit,susp,null),ok,susp,verified:false};
 }
-function pushChart(ms){chartData.push(ms);if(chartData.length>60)chartData.shift();
- const b=ms<30?0:ms<50?1:ms<80?2:ms<120?3:4;dist[b]++;drawChart();renderDist()}
+/* ---------- فاز ۲ ---------- */
+async function deepTest(r0){
+ const msArr=[];let ok=0;const T=4;
+ for(let i=0;i<T;i++){
+  if(stopFlag)break;
+  const p=await probe(r0.ip,S.port,S.timeout*1000);
+  if(p.ok){ok++;msArr.push(p.ms);pushChart(p.ms)}
+  await sleep(250);
+ }
+ let port2=null;
+ if(S.multiPort&&!stopFlag){const p2=await probe(r0.ip,2053,S.timeout*1000);port2=p2.ok;if(p2.ok)msArr.push(p2.ms)}
+ const med=median(msArr),jit=jitterOf(msArr);
+ const susp=med!==null&&med<30&&jit<15;
+ return Object.assign({},r0,{ping:med?Math.round(med):r0.ping,jit:Math.round(jit),ok:ok+(port2?1:0),verified:true,susp,score:computeScore(ok/(T+(S.multiPort?1:0)),med==null?999:med,jit,susp,port2)});
+}
 
+/* ---------- اجرای اسکن ---------- */
 async function startScan(){
  if(running)return toast('اسکن در حال اجراست');
  readSettings();
@@ -245,30 +284,46 @@ async function startScan(){
  if(S.source==='cf'){const per=Math.ceil(S.total/12);CF_RANGES.forEach(r=>{for(let i=0;i<per;i++)list.push(randIP(r))})}
  else{list=parseCustom(S.custom);if(!list.length)return toast('❌ رنج معتبر وارد نشده');if(list.length>S.total)list=shuffle(list).slice(0,S.total)}
  list=shuffle([...new Set(list)]);
- results=[];chartData=[];dist=[0,0,0,0,0];done=0;okC=0;failC=0;totalQ=list.length;assigned=0;stopFlag=false;running=true;
+ results=[];chartData=[];dist=[0,0,0,0,0];done1=0;done2=0;assigned=0;totalQ=list.length;stopFlag=false;running=true;phase=1;
  $('settingsPanel').style.display='none';$('progressPanel').style.display='block';go('scan');
  $('homeBadge').textContent='در حال اسکن...';
+ await calibrate();
+ $('phaseLbl').textContent='فاز ۱: غربالگری';
  let idx=0;
- const workers=Array.from({length:Math.min(S.threads,list.length)},async()=>{
-  while(true){
-   if(stopFlag)break;
-   const my=idx++;if(my>=list.length)break;assigned++;
-   const r=await evalIP(list[my]);
-   done++;
-   if(r.ok>0){okC++;results.push(r)}else failC++;
+ const conc=Math.max(1,Math.min(S.threads,60));
+ const w=Array.from({length:Math.min(conc,list.length)},async()=>{
+  while(!stopFlag){const my=idx++;if(my>=list.length)break;assigned++;
+   const r=await evalIP(list[my]);done1++;
+   if(r.ok>0)results.push(r);
    updateProgress();
+  }});
+ await Promise.all(w);
+ if(S.verify&&!stopFlag){
+  const cands=results.filter(r=>r.ok>0).sort((a,b)=>b.score-a.score).slice(0,15);
+  if(cands.length){
+   phase=2;totalQ=list.length+cands.length;
+   $('phaseLbl').textContent='فاز ۲: تأیید نهایی ('+cands.length+' IP)';
+   let i2=0;
+   const w2=Array.from({length:Math.min(4,cands.length)},async()=>{
+    while(!stopFlag){const my=i2++;if(my>=cands.length)break;assigned++;
+     const fin=await deepTest(cands[my]);done2++;
+     const at=results.findIndex(r=>r.ip===fin.ip);if(at>=0)results[at]=fin;
+     updateProgress();
+    }});
+   await Promise.all(w2);
   }
- });
- await Promise.all(workers);
+ }
  running=false;finish();
 }
+function stopScan(){stopFlag=true}
 function updateProgress(){
- const pct=totalQ?Math.round(done/totalQ*100):0;
+ const d=done1+done2,pct=totalQ?Math.round(d/totalQ*100):0;
  $('pPct').textContent=pct+'%';$('ringFg').style.strokeDashoffset=326.7*(1-pct/100);
- $('pDone').textContent=fmt(done);$('pOk').textContent=fmt(okC);$('pFail').textContent=fmt(failC);$('pQueue').textContent=fmt(Math.max(totalQ-assigned,0));
+ $('pDone').textContent=fmt(d);$('pOk').textContent=fmt(results.length);$('pFail').textContent=fmt(Math.max(d-results.length,0));$('pQueue').textContent=fmt(Math.max(totalQ-assigned,0));
  $('homeBar').style.width=pct+'%';$('homePct').textContent=pct+'%';
- $('stScanned').textContent=fmt(done);$('stOk').textContent=fmt(okC);
- const pings=results.filter(r=>r.ping);if(pings.length){$('stPing').textContent=Math.min(...pings.map(r=>r.ping))+' ms';$('stScore').textContent=Math.max(...results.map(r=>r.score)).toFixed(1)}
+ $('stScanned').textContent=fmt(d);$('stOk').textContent=fmt(results.length);
+ const pings=results.filter(r=>r.ping);
+ if(pings.length){$('stPing').textContent=Math.min(...pings.map(r=>r.ping))+' ms';$('stScore').textContent=Math.max(...results.map(r=>r.score)).toFixed(1)}
  renderBest();
 }
 function finish(){
@@ -276,13 +331,13 @@ function finish(){
  $('homeBadge').textContent='آماده برای اسکن';
  results.sort((a,b)=>b.score-a.score);
  renderResults();renderHistoryAdd();
- toast(stopFlag?'⛔ اسکن متوقف شد':'✅ اسکن تمام شد: '+okC+' IP موفق');
- if(S.notif&&'Notification'in window&&Notification.permission==='granted')new Notification('اسکنر کلادفلر',{body:okC+' IP تمیز پیدا شد'});
+ const v=results.filter(r=>r.verified&&r.score>=S.minScore).length;
+ toast((stopFlag?'⛔ متوقف شد':'✅ تمام شد')+' — '+v+' IP تأیید شده');
  setTimeout(()=>go('results'),600);
 }
-function stopScan(){stopFlag=true}
 
 /* ---------- نمودار ---------- */
+function pushChart(ms){chartData.push(ms);if(chartData.length>60)chartData.shift();dist[ms<30?0:ms<50?1:ms<80?2:ms<120?3:4]++;drawChart();renderDist()}
 function drawChart(){
  const c=$('chart'),x=c.getContext('2d');x.clearRect(0,0,600,220);
  x.strokeStyle='rgba(140,150,170,.15)';x.fillStyle='#8a94a7';x.font='16px Vazirmatn';
@@ -302,38 +357,36 @@ function renderDist(){
 }
 function renderBest(){
  const top=[...results].sort((a,b)=>b.score-a.score).slice(0,3);
- $('bestList').innerHTML=top.length?top.map(r=>'<div class="best">📶<span class="ip">'+r.ip+'</span><span>'+r.ping+'ms</span><span class="sc">'+r.score.toFixed(1)+' ★</span></div>').join(''):'<div class="muted">هنوز نتیجه ای نیست</div>';
+ $('bestList').innerHTML=top.length?top.map(r=>'<div class="best">📶<span class="ip">'+r.ip+(r.verified?' 🛡️':'')+'</span><span>'+r.ping+'ms</span><span class="sc">'+r.score.toFixed(1)+' ★</span></div>').join(''):'<div class="muted">هنوز نتیجه ای نیست</div>';
 }
 
 /* ---------- نتایج ---------- */
 let resF='all';
-function filtered(){
- if(resF==='ok')return results.filter(r=>r.ok>0);
- if(resF==='top')return results.filter(r=>r.score>=S.minScore);
- return results;
-}
+function filtered(){if(resF==='ok')return results.filter(r=>r.ok>0);if(resF==='top')return results.filter(r=>r.score>=S.minScore);return results}
 function renderResults(){
  const list=filtered();
  $('resBody').innerHTML=list.slice(0,800).map(r=>{
   const col=r.score>=90?'var(--green)':r.score>=70?'var(--yellow)':'var(--red)';
-  return'<tr><td><span class="dotc" style="background:'+col+'"></span></td><td style="color:'+col+'">'+r.score.toFixed(1)+'</td><td>'+(r.ping==null?'—':r.ping+'ms')+'</td><td class="ip">'+r.ip+'</td></tr>'}).join('')||'<tr><td colspan="4" class="muted">نتیجه ای نیست</td></tr>';
+  return'<tr><td class="ip">'+r.ip+(r.verified?' 🛡️':'')+'</td><td>'+(r.ping==null?'—':r.ping+'ms ±'+r.jit)+'</td><td style="color:'+col+';font-weight:700">'+r.score.toFixed(1)+'</td><td><span class="dotc" style="background:'+col+'"></span></td></tr>'}).join('')||'<tr><td colspan="4" class="muted">نتیجه ای نیست</td></tr>';
  $('resCount').textContent='تعداد: '+fmt(list.length);
 }
 function copyRes(){const t=filtered().map(r=>r.ip).join('\n');if(!t)return toast('لیست خالی است');
- (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('📋 '+filtered().length+' IP کپی شد')).catch(()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('📋 کپی شد')})}
-function saveRes(){const t='ip,ping,score\n'+filtered().map(r=>r.ip+','+(r.ping||'')+','+r.score).join('\n');
+ (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('📋 کپی شد')).catch(()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('📋 کپی شد')})}
+function saveRes(){const t='ip,ping,jitter,score,verified\n'+filtered().map(r=>r.ip+','+(r.ping||'')+','+r.jit+','+r.score+','+(r.verified?'yes':'no')).join('\n');
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='cf-clean-ips.csv';a.click();toast('💾 ذخیره شد')}
-function shareRes(){const t='IP های تمیز کلادفلر:\n'+filtered().slice(0,20).map(r=>r.ip+' | '+r.ping+'ms | '+r.score).join('\n');
+function shareRes(){const t='IP های تمیز کلادفلر:\n'+filtered().slice(0,20).map(r=>r.ip+' | '+r.ping+'ms | '+r.score+(r.verified?' ✔':'')).join('\n');
  if(navigator.share)navigator.share({text:t}).catch(()=>{});else copyRes()}
 
 /* ---------- تاریخچه ---------- */
 function faDate(){return new Intl.DateTimeFormat('fa-IR-u-nu-latn',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date())}
 function renderHistoryAdd(){
- if(!S.save)return renderHistory();
- const h=JSON.parse(localStorage.getItem('cfscan_hist')||'[]');
- const best=results.length?Math.max(...results.map(r=>r.score)):0;
- h.unshift({d:faDate(),type:S.source==='custom'?'اسکن سفارشی':(S.total>=500?'اسکن کامل':'اسکن سریع'),ok:okC>0,n:done,sc:best.toFixed(1)});
- localStorage.setItem('cfscan_hist',JSON.stringify(h.slice(0,20)));renderHistory();updCache();
+ if(S.save){
+  const h=JSON.parse(localStorage.getItem('cfscan_hist')||'[]');
+  const best=results.length?Math.max(...results.map(r=>r.score)):0;
+  h.unshift({d:faDate(),type:S.source==='custom'?'اسکن سفارشی':(S.total>=500?'اسکن کامل':'اسکن سریع'),ok:results.length>0,n:done1+done2,sc:best.toFixed(1)});
+  localStorage.setItem('cfscan_hist',JSON.stringify(h.slice(0,20)));updCache();
+ }
+ renderHistory();
 }
 function renderHistory(){
  const h=JSON.parse(localStorage.getItem('cfscan_hist')||'[]');
@@ -354,16 +407,16 @@ function updCache(){let b=0;for(const k in localStorage)if(k.startsWith('cfscan_
  $('cacheSize').textContent=b>1048576?(b/1048576).toFixed(1)+' MB':(b/1024).toFixed(1)+' KB'}
 function clearCache(){['cfscan_hist','cfscan_set'].forEach(k=>localStorage.removeItem(k));toast('🗑 کش پاک شد');updCache()}
 
-/* ---------- اتصال UI ---------- */
+/* ---------- UI ---------- */
 $('testsSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.tests=+b.dataset.v;$('testsSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));$('testsVal').textContent=b.dataset.v});
 $('resFilter').querySelectorAll('button').forEach(b=>b.onclick=()=>{resF=b.dataset.f;$('resFilter').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));renderResults()});
 [['totalR','totalVal',''],['thrR','thrVal',''],['toR','toVal',' ثانیه'],['minR','minVal','']].forEach(([r,v,s])=>{$(r).oninput=()=>{$(v).textContent=$(r).value+s}});
 
-/* ---------- شروع ---------- */
 $('srcSel').value=S.source;srcChange();$('customRanges').value=S.custom;$('portIn').value=S.port;
 $('totalR').value=S.total;$('totalVal').textContent=S.total;$('thrR').value=S.threads;$('thrVal').textContent=S.threads;
 $('toR').value=S.timeout;$('toVal').textContent=S.timeout+' ثانیه';$('minR').value=S.minScore;$('minVal').textContent=S.minScore;
 $('swNotif').classList.toggle('on',S.notif);$('swSave').classList.toggle('on',S.save);
+$('swVerify').classList.toggle('on',S.verify);$('swPort').classList.toggle('on',S.multiPort);
 applyTheme();renderHistory();updCache();renderDist();drawChart();
 </script>
 </body>
